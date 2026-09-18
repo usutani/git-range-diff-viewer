@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { pickCommitRange, CommitRange } from './commitPicker';
 import { getBinarySet, getChangedFiles, resolveRepoAuto, resolveRepoRoot, toRepoRoot } from './gitService';
-import { DiffTreeProvider } from './diffTreeProvider';
+import { DiffTreeProvider, FileNode } from './diffTreeProvider';
 import { CommitHistoryProvider, CommitNode } from './commitHistoryProvider';
 import { DIFF_SCHEME, DiffContentProvider } from './diffContentProvider';
 import { EMPTY_REV, encodeDiffQuery, FileEntry } from './gitParse';
@@ -238,8 +238,15 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
-    vscode.commands.registerCommand('gitRangeDiff.openDiff', async (entry: FileEntry) => {
-      if (!current || !entry) {
+    vscode.commands.registerCommand('gitRangeDiff.openDiff', async (arg: FileEntry | FileNode) => {
+      // 左クリック経路ではFileEntry、右クリックメニュー経路ではFileNodeが渡る
+      const entry = (arg as FileNode)?.entry ?? (arg as FileEntry);
+      if (!entry?.path) {
+        log(`openDiff: unexpected argument ${JSON.stringify(arg)?.slice(0, 200)}`);
+        vscode.window.showWarningMessage('ファイル情報を取得できませんでした。一覧から開き直してください。');
+        return;
+      }
+      if (!current) {
         return;
       }
       const { range, repoRoot } = current;

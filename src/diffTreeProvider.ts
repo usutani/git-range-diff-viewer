@@ -2,8 +2,15 @@ import * as vscode from 'vscode';
 import { CommitRange } from './commitPicker';
 import { FileEntry } from './gitParse';
 
-export class DiffTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | void>();
+/** FileEntryを保持するツリー要素。左クリック(command引数)と右クリック(要素自体)の両経路に対応 */
+export class FileNode extends vscode.TreeItem {
+  constructor(public readonly entry: FileEntry | undefined, label: string) {
+    super(label, vscode.TreeItemCollapsibleState.None);
+  }
+}
+
+export class DiffTreeProvider implements vscode.TreeDataProvider<FileNode> {
+  private _onDidChangeTreeData = new vscode.EventEmitter<FileNode | undefined | void>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
   private range?: CommitRange;
@@ -31,37 +38,40 @@ export class DiffTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
     return this.entries.length;
   }
 
-  getTreeItem(el: vscode.TreeItem): vscode.TreeItem {
+  getTreeItem(el: FileNode): vscode.TreeItem {
     return el;
   }
 
-  async getChildren(el?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
+  async getChildren(el?: FileNode): Promise<FileNode[]> {
     if (el) {
       return [];
     }
     if (!this.range) {
-      const item = new vscode.TreeItem('「コミット範囲を選択して比較」を実行してください', vscode.TreeItemCollapsibleState.None);
+      const item = new FileNode(
+        undefined,
+        '「Select Commits to Compare」を実行してください'
+      );
       item.iconPath = new vscode.ThemeIcon('info');
       return [item];
     }
     const short = (h: string) => (h === 'HEAD' ? 'HEAD' : h.slice(0, 8));
-    const header = new vscode.TreeItem(
-      `${short(this.range.oldRev)}..${short(this.range.newRev)} (${this.entries.length}件${this.truncated ? '・上限で省略あり' : ''})`,
-      vscode.TreeItemCollapsibleState.None
+    const header = new FileNode(
+      undefined,
+      `${short(this.range.oldRev)}..${short(this.range.newRev)} (${this.entries.length}件${this.truncated ? '・上限で省略あり' : ''})`
     );
     header.iconPath = new vscode.ThemeIcon('git-compare');
     header.tooltip = `${this.range.oldSubject}\n→ ${this.range.newSubject}\n${this.repoRoot}`;
     header.contextValue = 'diffHeader';
 
     const files = this.entries.map((e) => {
-      const item = new vscode.TreeItem(e.oldPath ? `${e.oldPath} → ${e.path}` : e.path, vscode.TreeItemCollapsibleState.None);
+      const item = new FileNode(e, e.oldPath ? `${e.oldPath} → ${e.path}` : e.path);
       item.description = e.rawStatus;
       item.tooltip = `${e.rawStatus} ${e.oldPath ? `${e.oldPath} → ${e.path}` : e.path}`;
       item.contextValue = 'diffFile';
       item.iconPath = DiffTreeProvider.iconFor(e.status);
       item.command = {
         command: 'gitRangeDiff.openDiff',
-        title: '差分を開く',
+        title: 'Open Diff',
         arguments: [e],
       };
       return item;
