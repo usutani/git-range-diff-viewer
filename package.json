@@ -2,7 +2,7 @@
   "name": "git-range-diff-viewer",
   "displayName": "Git Range Diff Viewer",
   "description": "Gitの任意の2コミット間の差分をファイル一覧(TreeView)と標準diffエディタで確認する",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "publisher": "local",
   "license": "MIT",
   "engines": {
@@ -11,7 +11,9 @@
   "categories": ["SCM Providers", "Other"],
   "activationEvents": [
     "onView:gitRangeDiffView",
-    "onCommand:gitRangeDiff.selectCommits"
+    "onView:gitRangeDiffCommits",
+    "onCommand:gitRangeDiff.selectCommits",
+    "onCommand:gitRangeDiff.selectRepository"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -26,6 +28,10 @@
     },
     "views": {
       "gitRangeDiff": [
+        {
+          "id": "gitRangeDiffCommits",
+          "name": "コミット履歴"
+        },
         {
           "id": "gitRangeDiffView",
           "name": "比較ファイル一覧"
@@ -51,10 +57,59 @@
       {
         "command": "gitRangeDiff.openDiff",
         "title": "Open Diff"
+      },
+      {
+        "command": "gitRangeDiff.setOldCommit",
+        "title": "Set as Old Commit",
+        "icon": "$(circle-outline)"
+      },
+      {
+        "command": "gitRangeDiff.setNewAndCompare",
+        "title": "Set as New Commit & Compare",
+        "icon": "$(circle-filled)"
+      },
+      {
+        "command": "gitRangeDiff.clearCommitSelection",
+        "title": "Clear Commit Selection",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "gitRangeDiff.refreshCommits",
+        "title": "Refresh Commit History",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "gitRangeDiff.loadMoreCommits",
+        "title": "Load More Commits"
+      },
+      {
+        "command": "gitRangeDiff.selectRepository",
+        "title": "Select Repository",
+        "icon": "$(folder-opened)"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "gitRangeDiff.selectCommits",
+          "when": "view == gitRangeDiffCommits",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gitRangeDiff.selectRepository",
+          "when": "view == gitRangeDiffCommits",
+          "group": "navigation@2"
+        },
+        {
+          "command": "gitRangeDiff.refreshCommits",
+          "when": "view == gitRangeDiffCommits",
+          "group": "navigation@3"
+        },
+        {
+          "command": "gitRangeDiff.clearCommitSelection",
+          "when": "view == gitRangeDiffCommits",
+          "group": "navigation@4"
+        },
         {
           "command": "gitRangeDiff.selectCommits",
           "when": "view == gitRangeDiffView",
@@ -72,6 +127,21 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "gitRangeDiff.selectRepository",
+          "when": "view == gitRangeDiffCommits && viewItem == repoPlaceholder",
+          "group": "1_repo@1"
+        },
+        {
+          "command": "gitRangeDiff.setOldCommit",
+          "when": "view == gitRangeDiffCommits && viewItem == commitItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "gitRangeDiff.setNewAndCompare",
+          "when": "view == gitRangeDiffCommits && viewItem == commitItem",
+          "group": "inline@2"
+        },
         {
           "command": "gitRangeDiff.openDiff",
           "when": "view == gitRangeDiffView && viewItem == diffFile",

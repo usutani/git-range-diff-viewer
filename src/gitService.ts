@@ -33,7 +33,34 @@ function execGit(repoRoot: string, args: string[]): Promise<{ stdout: Buffer; st
   });
 }
 
-/** ワークスペースフォルダ→gitルート。EDITOR優先→先頭フォルダ */
+/** 任意フォルダ配下のgitルートを返す。リポジトリ外なら例外 */
+export async function toRepoRoot(fsPath: string): Promise<string> {
+  const { stdout } = await execGit(fsPath, ['rev-parse', '--show-toplevel']);
+  return stdout.toString('utf8').trim().replace(/\r?\n$/, '');
+}
+
+/** 起動時の自動検出用。QuickPickを出さず、active editorの所属フォルダ→先頭フォルダの順で決定 */
+export async function resolveRepoAuto(): Promise<string | undefined> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) {
+    return undefined;
+  }
+  let first = folders[0].uri.fsPath;
+  const active = vscode.window.activeTextEditor?.document.uri;
+  if (active?.scheme === 'file') {
+    const wf = vscode.workspace.getWorkspaceFolder(active);
+    if (wf) {
+      first = wf.uri.fsPath;
+    }
+  }
+  try {
+    return await toRepoRoot(first);
+  } catch {
+    return undefined;
+  }
+}
+
+/** ワークスペースフォルダ→gitルート。EDITOR優先→先頭フォルダ。複数候補があればQuickPick */
 export async function resolveRepoRoot(): Promise<string | undefined> {
   const folders = vscode.workspace.workspaceFolders;
   if (!folders || folders.length === 0) {
@@ -58,8 +85,7 @@ export async function resolveRepoRoot(): Promise<string | undefined> {
     candidates = [picked.label];
   }
   try {
-    const { stdout } = await execGit(candidates[0], ['rev-parse', '--show-toplevel']);
-    return stdout.toString('utf8').trim().replace(/\r?\n$/, '');
+    return await toRepoRoot(candidates[0]);
   } catch {
     return undefined;
   }
