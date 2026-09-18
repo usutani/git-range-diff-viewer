@@ -1,0 +1,121 @@
+{
+  "name": "git-range-diff-viewer",
+  "displayName": "Git Range Diff Viewer",
+  "description": "Gitの任意の2コミット間の差分をファイル一覧(TreeView)と標準diffエディタで確認する",
+  "version": "0.1.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["SCM Providers", "Other"],
+  "activationEvents": [
+    "onView:gitRangeDiffView",
+    "onCommand:gitRangeDiff.selectCommits"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gitRangeDiff",
+          "title": "Commit Diff",
+          "icon": "media/git-diff.svg"
+        }
+      ]
+    },
+    "views": {
+      "gitRangeDiff": [
+        {
+          "id": "gitRangeDiffView",
+          "name": "比較ファイル一覧"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "gitRangeDiff.selectCommits",
+        "title": "Select Commits to Compare",
+        "icon": "$(git-compare)"
+      },
+      {
+        "command": "gitRangeDiff.refresh",
+        "title": "Refresh Diff",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "gitRangeDiff.clear",
+        "title": "Clear View",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "gitRangeDiff.openDiff",
+        "title": "Open Diff"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "gitRangeDiff.selectCommits",
+          "when": "view == gitRangeDiffView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gitRangeDiff.refresh",
+          "when": "view == gitRangeDiffView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "gitRangeDiff.clear",
+          "when": "view == gitRangeDiffView",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "gitRangeDiff.openDiff",
+          "when": "view == gitRangeDiffView && viewItem == diffFile",
+          "group": "inline@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Git Range Diff Viewer",
+      "properties": {
+        "gitRangeDiff.gitPath": {
+          "type": "string",
+          "default": "",
+          "description": "git実行ファイルのパス。空の場合はVSCodeの git.path 設定、なければPATH上の git を使う。"
+        },
+        "gitRangeDiff.logPageSize": {
+          "type": "number",
+          "default": 100,
+          "minimum": 20,
+          "maximum": 500,
+          "description": "コミット選択QuickPickの1ページあたりの取得件数。"
+        },
+        "gitRangeDiff.maxFiles": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 100,
+          "maximum": 10000,
+          "description": "ファイル一覧に表示する上限件数。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "npm run check && npm run bundle",
+    "check": "tsc --noEmit -p ./",
+    "bundle": "esbuild ./src/extension.ts --bundle --outfile=./dist/extension.js --external:vscode --format=cjs --platform=node --target=node18",
+    "watch": "esbuild ./src/extension.ts --bundle --outfile=./dist/extension.js --external:vscode --format=cjs --platform=node --target=node18 --watch",
+    "test:unit": "tsc ./src/gitParse.ts --module commonjs --target es2020 --outDir ./out-test-parse --skipLibCheck && node --test ./test/parse.test.mjs",
+    "package": "npm run compile && npx --yes @vscode/vsce package --out ./git-range-diff-viewer.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  }
+}

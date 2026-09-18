@@ -1,0 +1,8 @@
+vsls-json.showLoginPrompt = false
+out/**
+out-test-parse/**
+node_modules/**
+test/**
+**/*.map
+.gitignore
+tsconfig.json
