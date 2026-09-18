@@ -2,7 +2,7 @@
   "name": "git-range-diff-viewer",
   "displayName": "Git Range Diff Viewer",
   "description": "Gitの任意の2コミット間の差分をファイル一覧(TreeView)と標準diffエディタで確認する",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "local",
   "license": "MIT",
   "engines": {
@@ -135,12 +135,27 @@
         {
           "command": "gitRangeDiff.setOldCommit",
           "when": "view == gitRangeDiffCommits && viewItem == commitItem",
+          "group": "compare@1"
+        },
+        {
+          "command": "gitRangeDiff.setNewAndCompare",
+          "when": "view == gitRangeDiffCommits && viewItem == commitItem",
+          "group": "compare@2"
+        },
+        {
+          "command": "gitRangeDiff.setOldCommit",
+          "when": "view == gitRangeDiffCommits && viewItem == commitItem",
           "group": "inline@1"
         },
         {
           "command": "gitRangeDiff.setNewAndCompare",
           "when": "view == gitRangeDiffCommits && viewItem == commitItem",
           "group": "inline@2"
+        },
+        {
+          "command": "gitRangeDiff.openDiff",
+          "when": "view == gitRangeDiffView && viewItem == diffFile",
+          "group": "compare@1"
         },
         {
           "command": "gitRangeDiff.openDiff",
