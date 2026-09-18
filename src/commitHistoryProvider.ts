@@ -126,18 +126,20 @@ export class CommitHistoryProvider implements vscode.TreeDataProvider<CommitNode
       tags.push('new');
     }
     if (tags.length > 0) {
-      node.label = `[${tags.join(',')}] ${subject || '(no message)'}`;
+      const tagText = `[${tags.join(',')}] `;
+      // タグ部にハイライト背景を付与 ([0, end)はend-exclusive)
+      node.label = { label: `${tagText}${subject || '(no message)'}`, highlights: [[0, tagText.length - 1]] };
     }
     const base = kind === 'head' ? 'HEAD' : `${hash.slice(0, 8)} ${author} ${date}`;
     node.description = marks.length ? `${base} ${marks.join(' ')}` : base;
     node.tooltip = kind === 'head' ? 'HEAD (最新の状態)' : `${subject}\n${hash}\n${author} ${date}`;
     node.contextValue = 'commitItem';
     if (this.oldHash === hash && this.newHash === hash) {
-      node.iconPath = new vscode.ThemeIcon('record');
+      node.iconPath = new vscode.ThemeIcon('record', new vscode.ThemeColor('charts.yellow'));
     } else if (this.oldHash === hash) {
-      node.iconPath = new vscode.ThemeIcon('circle-outline');
+      node.iconPath = new vscode.ThemeIcon('circle-outline', new vscode.ThemeColor('charts.blue'));
     } else if (this.newHash === hash) {
-      node.iconPath = new vscode.ThemeIcon('circle-filled');
+      node.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor('charts.green'));
     } else {
       node.iconPath = new vscode.ThemeIcon(kind === 'head' ? 'target' : 'git-commit');
     }
