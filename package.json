@@ -3,8 +3,13 @@
   "displayName": "Git Range Diff Viewer",
   "description": "Gitの任意の2コミット間の差分をファイル一覧(TreeView)と標準diffエディタで確認する",
   "version": "0.2.4",
-  "publisher": "local",
+  "publisher": "usutani",
   "license": "MIT",
+  "icon": "media/icon-128.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usutani/git-range-diff-viewer.git"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
